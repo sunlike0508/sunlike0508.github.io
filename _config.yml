@@ -93,15 +93,15 @@ analytics:
 
 # Site Author
 author:
-  name             : "감 없는 개발자"
+  name             : "감 1도 없는 개발자"
   avatar           : "/assets/images/profile.jpg"
-  bio              : "세계여행을 꿈꾸는 개발자"
-  location         : "Somewhere"
+  bio              : "여행을 꿈꾸는 개발자"
+  location         : "world"
   email            : "thesin1989@gmail.com"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      # url: mailto:your.name@email.com
+      url: "thesin198@email.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       # url: "https://your-website.com"
