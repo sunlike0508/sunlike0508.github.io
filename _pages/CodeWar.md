@@ -1,7 +1,7 @@
 ---
 title: "CodeWar 코딩풀이"
 permalink: /categories/codewar/
-layout: categories
+layout: category
 author_profile: true
 taxonomy: CodeWar
 ---
