@@ -1,4 +1,3 @@
-```
 ---
 title: "감을 찾기 위한 블로그"
 permalink: /about/
