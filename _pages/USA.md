@@ -1,7 +1,7 @@
 ---
 title: "CodeWar 코딩풀이"
 permalink: /travel/usa/
-layout: travel
+layout: categories
 author_profile: true
 taxonomy: Travel
 ---

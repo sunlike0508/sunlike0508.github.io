@@ -1,6 +1,6 @@
 ---
 title: "Posts by Travel"
-layout: travel
+layout: single
 permalink: /travel/
 author_profile: true
 ---
