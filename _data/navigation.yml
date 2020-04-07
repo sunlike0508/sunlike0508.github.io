@@ -1,11 +1,11 @@
 # main links
 main:
-  - title: "Quick-Start Guide"
-    url: https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/
-  # - title: "About"
-  #   url: https://mmistakes.github.io/minimal-mistakes/about/
-  # - title: "Sample Posts"
-  #   url: /year-archive/
+  - title: "about"
+    url: https://sunlike0508.com/
+  - title: "about"
+    url: /about/
+  - title: "CodeWar"
+    url: /CodeWar/
   # - title: "Sample Collections"
   #   url: /collection-archive/
   # - title: "Sitemap"
