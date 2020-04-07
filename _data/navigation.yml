@@ -1,12 +1,10 @@
 # main links
 main:
-  - title: "about"
-    url: https://sunlike0508.com/
-  - title: "about"
+  - title: "About"
     url: /about/
-  - title: "CodeWar"
-    url: /CodeWar/
-  # - title: "Sample Collections"
-  #   url: /collection-archive/
+  - title: "Categories"
+    url: /Categories/
+  - title: "Travel"
+    url: /travel/
   # - title: "Sitemap"
   #   url: /sitemap/
