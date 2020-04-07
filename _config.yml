@@ -100,9 +100,9 @@ author:
   location         : "Somewhere"
   email            : "thesin1989@gmail.com"
   links:
-    - label: "Email"
+        - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      url: "mailto:thesin1989@gmail.com"
+      # url: mailto:thesin1989@gmail.com
         - label: "Website"
       icon: "fas fa-fw fa-link"
       # url: "https://your-website.com"
