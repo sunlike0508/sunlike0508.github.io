@@ -2,6 +2,7 @@
 title: "감을 찾기 위한 블로그"
 permalink: /about/
 layout: single
+author_profile: true
 ---
 
 ## sunlike0508.github.io 블로그
