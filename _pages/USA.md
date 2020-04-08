@@ -1,7 +1,7 @@
 ---
 title: "미국여행 포스트"
 permalink: /travel/usa/
-layout: category
+layout: post
 author_profile: true
 taxonomy: Travel
 ---

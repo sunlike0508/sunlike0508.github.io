@@ -1,6 +1,6 @@
 ---
 title: "Posts by Travel"
-layout: categories
+layout: post
 permalink: /travel/
 author_profile: true
 ---
