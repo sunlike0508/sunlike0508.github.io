@@ -145,7 +145,7 @@ int search(int[] data, int begin, int end, int target) {
 
 
 
-### 응용 예제 : 미로찾기
+### 응용 예제 1: 미로찾기
 
 * 현재 위치에서 출구까지 가는 경로가 있으려면
   1. 현재 위치가 출구이거나 혹은
@@ -250,4 +250,156 @@ public class Maze {
 	}
 }
 ```
+
+
+
+### 응용예제 2 : Counting Cells in a Blob
+
+![]({{site.url}}/assets/images/algo1.PNG)
+
+* 현재 픽셀이 속한 blob의 크기를 카운트하려면
+
+  1. 현재 픽셀이 image color가 아니라면
+
+     0을 반환한다
+
+  2. 현재 픽셀이 image color라면
+
+     먼저 현재 픽셀을 카운트 한다 (count =1)
+
+     현재 픽셀에 중복 카운트되는 것을 방지하기 위해 다른 색으로 칠한다.
+
+     현재 픽셀에 이웃한 모든 픽셀들에 대해서 그 픽셀이 속한 blob의 크기를 카운트하여 카운터 더 해준다.
+
+     카운터를 반환한다.
+
+* 수도 코드
+
+```java
+if the pixel(x,y) is outside the grid
+	the result is 0;
+else if pixel(x,y) is not an image pixel or already counted
+	the result is 0;
+else 
+	set the color of the pixel (x,y) to a red color;
+	the result is 1 plus the number of cells in each piece of the blob that includes a 		nearest neighbour;
+```
+
+* 실제 코드
+
+```java
+public class CountingBlob {
+	private static int N = 8;
+	private static int [][] blob = {
+		{1,0,0,0,0,0,0,1},
+		{0,1,1,0,0,1,0,0},
+		{1,1,0,0,1,0,1,0},
+		{0,0,0,0,0,1,0,0},
+		{0,1,0,1,0,1,0,0},
+		{0,1,0,1,0,1,0,0},
+		{1,0,0,0,1,0,0,1},
+		{0,1,1,0,0,1,1,1},
+	};
+	
+	private static final int BACKGROUND_COLOUR = 0;
+	private static final int IMAGE_COLOUR = 1;
+	private static final int ALREADY_COUNT = 2;
+	
+	public static void main(String[] argv) {
+		System.out.println(countCells(4, 3));
+	}
+	
+	public static int countCells(int x, int y) {
+		
+		if(x < 0 || y < 0 || x >= N || y >= N) {
+			return 0;
+		} else if(blob[x][y] != IMAGE_COLOUR) {
+			return 0;
+		} else {
+			blob[x][y] = ALREADY_COUNT;
+			
+			return 1 + countCells(x-1,y+1) + countCells(x,y+1) 
+					+ countCells(x+1,y+1) + countCells(x-1,y) 
+					+ countCells(x+1,y) + countCells(x-1,y-1) 
+					+ countCells(x,y-1) + countCells(x+1,y-1); 
+		}
+	}
+}
+```
+
+
+
+
+
+### 응용예제 3 : N Queens
+
+![]({{site.url}}/assets/images/algo2.PNG)
+
+* 한 줄에 하나의 퀸이 꼭 놓어야 한다면 어디에 놓여야 하는가?
+
+![]({{site.url}}/assets/images/algo3.PNG)
+
+![]({{site.url}}/assets/images/algo4.PNG)
+
+* 상태공간 트리를 깊이 우선 방식으로 탐색(되추적 기법: Backtracking)하여 해를 찾는 알고리즘
+* 수도코드
+
+```java
+//N은 배열 크기
+//cols는 각 행에 놓일 퀸의 위치를 저장하는 변수
+//예를 들어 1행에 1, 2행에 4 3행에 2에 놓였다면 cols에는 1,4,2 이렇게 들어가 있다.
+int[] cols = new int [N+1]; // 전역변수
+boolean queens(arguments: int level){
+	if (!promising(level)) // 도착한 노드가 성공했냐?
+		return false;
+	else if (level==N) // 위에 promising을 성공 (최종 4번째 행(N)까지 도착한 성공이냐?)
+        //출력 메소드 만들면됨 이때
+		return true;
+	else // 꽝도 아니고 답도 아니면 자식 노드로 내려 간다. 
+		for(int i = 1; i <=N; i++){
+            clos[level+1] = i; // 해당 행에서 오른쪽 열로 하나씩 이동하면서 
+            if(queens(level+1)){ // 해당 행의 아래 행들이 성공이냐?
+                return true;
+            }
+        }
+   		
+    	return false;
+}
+```
+
+* arguments는 어떤 노드에 도착했는지? 즉, 도착한 행의 깊이
+* promising 함수는 어떻게 구성해야 하는건가?
+* 같은 열에 놓여 있는가? 같은 대각선에 놓였는가?
+
+```java
+boolean promising(int level){
+    for(int i = 1; i < level; i++){
+        if(cols[i] == cols[level]) // 같은 열에 있는가? 수도 코드에서 cols의 배열에 각 열을 넣									어 놨기 때문에 (clos[level+1] = i;) 그 값으로 비교한다.
+            return false;
+        if(level -i == Math.abs(cols[level] - cols[i])) // 같은 대각선에 있는가?
+            return false;
+    }
+    
+    return true;
+}
+```
+
+![]({{site.url}}/assets/images/algo5.PNG)
+
+* 대각선의 경우 위의 공식
+* 같은 대각선이다라는 것은 행과 열의 차이가 같다라는 것이다. ex) (3,3)과 (1,1)은 같은 대각선
+* level-i는 깊이(행)를 나타낸다. 
+* cols[level] - cols[i]는 대각선의 길이(열)을 나타낸다.
+* 그래서 이 둘의 크기가 같다면 같은 대각선에 있는 것
+* 절댓값을 붙여준 것은 반대의 방향도 적용
+
+
+
+
+
+
+
+
+
+
 
