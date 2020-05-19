@@ -51,8 +51,8 @@ reCaptcha:
   secret                 :
 atom_feed:
   path                   : # blank (default) uses feed.xml
-search                   : # true, false (default)
-search_full_content      : # true, false (default)
+search                   :  true # true, false (default)
+search_full_content      : true # true, false (default)
 search_provider          : # lunr (default), algolia, google
 algolia:
   application_id         : # YOUR_APPLICATION_ID
@@ -96,15 +96,15 @@ author:
   name             : "감 1도 없는 개발자"
   avatar           : "/assets/images/profile.jpg"
   bio              : "여행을 꿈꾸는 개발자"
-  location         : "world"
+  location         : "Sout Korea in the World"
   email            : "thesin1989@gmail.com"
   links:
     - label: "Email"
       icon: "fas fa-fw fa-envelope-square"
-      # url: "thesin198@email.com"
+      url: mailto:thesin198@email.com
     - label: "Website"
       icon: "fas fa-fw fa-link"
-      # url: "https://your-website.com"
+      url: "https://sunlike0508.github.io/"
     - label: "Twitter"
       icon: "fab fa-fw fa-twitter-square"
       # url: "https://twitter.com/"
@@ -113,7 +113,7 @@ author:
       # url: "https://facebook.com/"
     - label: "GitHub"
       icon: "fab fa-fw fa-github"
-      # url: "https://github.com/"
+      url: "https://github.com/sunlike0508/"
     - label: "Instagram"
       icon: "fab fa-fw fa-instagram"
       # url: "https://instagram.com/"
@@ -279,4 +279,4 @@ defaults:
       comments: # true
       share: true
       related: true
-      
+    
