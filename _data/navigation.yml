@@ -8,6 +8,5 @@ main:
 
   - title: "Tags"
     url: /tags/
-  #  url: /travel/
-  # - title: "Sitemap"
-  #   url: /sitemap/
+  - title: "Search"
+    url: /Search/
