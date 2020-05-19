@@ -7,9 +7,9 @@ en: &DEFAULT_EN
   skip_primary_nav           : "Skip to primary navigation"
   skip_content               : "Skip to content"
   skip_footer                : "Skip to footer"
-  page                       : "Page"
-  pagination_previous        : "Previous"
-  pagination_next            : "Next"
+  page                       : "페이지"
+  pagination_previous        : "이전"
+  pagination_next            : "다음"
   breadcrumb_home_label      : "Home"
   breadcrumb_separator       : "/"
   menu_label                 : "Toggle menu"
@@ -45,9 +45,9 @@ en: &DEFAULT_EN
   comment_success_msg        : "Thanks for your comment! It will show on the site once it has been approved."
   comment_error_msg          : "Sorry, there was an error with your submission. Please make sure all required fields have been completed and try again."
   loading_label              : "Loading..."
-  search_label_text          : "Enter your search term..."
-  search_placeholder_text    : "Enter your search term..."
-  results_found              : "Result(s) found"
+  search_label_text          : 
+  search_placeholder_text    : "검색어를 입력하세요"
+  results_found              : "개 결과 발견"
   back_to_top                : "Back to top"
 en-US:
   <<: *DEFAULT_EN
