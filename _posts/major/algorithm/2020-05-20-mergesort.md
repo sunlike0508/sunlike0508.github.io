@@ -1,0 +1,94 @@
+---
+title:  "Merge Sort"
+excerpt: "합병 정렬"
+classes: wide
+categories:
+  - algorithm
+tags:
+  - [algorithm, sort]
+last_modified_at: 2020-05-20
+---
+
+
+
+
+
+# 정렬
+
+
+
+
+
+# 합병정렬(Merge Sort)
+
+* 분할 : 해결하고자 하는 문제를 작은 크기의 동일한 문제들로 분할
+* 정복 : 각각의 작은 문제를 순환적으로 해결
+* 합병 : 작은 문제의 해를 합하여(merge) 원래 문제에 대한 해를 구함
+
+### 프로세스
+
+* 데이터가 저장된 배열을 절반으로 나눔
+* 각각을 순환적으로 정렬
+* 정렬된 두 개의 배열을 합쳐 전체를 정렬
+
+![]({{site.url}}/assets/images/algo12.PNG)
+
+* 시간복잡도는 대략 O(logN * N)이다.
+
+![]({{site.url}}/assets/images/algo13.PNG)
+
+```java
+public class MergeSort {
+	public static void main(String[] args) {
+		int[] sort = new int[] {29, 10, 14, 37, 13};
+		mergeSort(sort, 0, sort.length-1);
+		printArray(sort);
+	}
+
+	private static void mergeSort(int[] sort, int i, int j) {
+		//System.out.println(i + " " + j);
+		if(i < j) {
+			int r = (i+j) /2;
+			mergeSort(sort, i, r);
+			mergeSort(sort, r+1, j);
+			merge(sort, i, r, j);
+			printArray(sort);
+		}
+		
+	}
+
+	private static void merge(int[] sort, int i, int r, int j) {
+		
+		int[] temp = new int[sort.length];
+		
+		int x = i, y = r+1, z = i;
+		
+		while(x <= r && y <= j) {
+			if(sort[x] > sort[y]) {
+				temp[z++] = sort[y++];
+			} else {
+				temp[z++] = sort[x++];
+			}
+		}
+		
+		while(x <= r) {
+			temp[z++] = sort[x++];
+		}
+		while(y <=j) {
+			temp[z++] = sort[y++];
+		}
+		
+		for(int t = i; t <=j; t++) {
+			sort[t] = temp[t];
+		}
+	}
+
+	private static void printArray(int[] sort) {
+		for(int i = 0; i < sort.length; i++) {
+			System.out.print(sort[i] + " ");
+		}
+		
+		System.out.println();
+	}
+}
+```
