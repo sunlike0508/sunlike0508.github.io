@@ -18,7 +18,7 @@ last_modified_at: 2020-05-28
 
 
 
-### 1. Counting Sort 
+### 1. Counting Sort (계수정렬)
 
 * N개의 정수를 정렬하라. 단 모든 정수는 0에서 K사이의 정수이다.
 
