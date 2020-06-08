@@ -1,12 +1,11 @@
 ---
-title:  "Programmers 아흔 일곱 번째 문제"
+title:  "Programmers 첫 번째 문제"
 excerpt: "스킬트리"
 classes: wide
 categories:
-  - CodeWars
+  - Programmers
 tags:
-  - CodeWars
-  - Level2
+  - Programmers
 last_modified_at: 2020-06-07
 ---
 
