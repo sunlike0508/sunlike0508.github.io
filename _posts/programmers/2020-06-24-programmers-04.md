@@ -1,6 +1,6 @@
 ---
 title:  "Programmers 네 번째 문제"
-excerpt: "비밀지도"
+excerpt: "예산"
 classes: wide
 categories:
   - Programmers
