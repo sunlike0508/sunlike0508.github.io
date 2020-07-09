@@ -589,8 +589,241 @@ public class Rental {
 * Movie 클래스는 비디오 종류에 따라 같은 메소드 호출에도 각기 다른 값을 반환한다.
 * 그런데 이건 하위클래스가 처리할 일이다.
 * 따라서 Movie 클래스를 상속받는 3개의 하위클래스를 작성하고, 비디오 종류별 대여료 계산을 각 하위 클래스에 넣어야 한다.
+* 이렇게 하면 switch 문을 재정의로 바꿀 수 있다.
+* RegularPrice, ChildrensPrice, NewReleasePrice 클래스의 상위 클래스로 Price 클래스를 만들면 언제든 대여료를 변경할 수 있다.
+* 하위 클래스를 작성해서 Movie 클래스를 상속 구조로 만듦
+
+![]({{site.url}}/assets/images/ref14.PNG)
+
+* Movie 클래스에 상태 패턴 적용
+
+![]({{site.url}}/assets/images/ref15.PNG)
+
+* 최종 코드
+
+```java
+public abstract class Price {
+	abstract int getPriceCode();
+	abstract double getCharge(int daysRented);
+	
+	int getFrequentRenterPoints(int daysRented) {
+		return 1;
+	}
+
+}
+
+class ChildrensPrice extends Price {
+	@Override
+	int getPriceCode() {
+		return Movie.CHILDRENS;
+	}
+
+	@Override
+	double getCharge(int daysRented) {
+		double result = 1.5;
+		
+		if (daysRented > 3) {
+			result += (daysRented - 3) * 1.5;
+		}
+		
+		return result;
+	}
+}
+
+class NewReleasesPrice extends Price {
+	@Override
+	int getPriceCode() {
+		return Movie.NEW_RELEASE;
+	}
+	
+	@Override
+	double getCharge(int daysRented) {
+		return daysRented * 3;
+	}
+
+	@Override
+	int getFrequentRenterPoints(int daysRented) {
+		return (daysRented > 1) ? 2 : 1;
+	}
+}
+
+class RegularPrice extends Price {
+	@Override
+	int getPriceCode() {
+		return Movie.REGULAR;
+	}
+
+	@Override
+	double getCharge(int daysRented) {
+		double result = 2;
+
+		if (daysRented > 2) {
+			result += (daysRented - 2) * 1.5;
+		}
+		
+		return result;
+	}
+}
+```
+
+```java
+public class Movie {
+	public static final int CHILDRENS = 2;
+	public static final int REGULAR = 0;
+	public static final int NEW_RELEASE = 1;
+	private String _title;
+	private int _priceCode;
+	private Price _price;
+	
+	public Movie(String title, int priceCode) {
+		_title = title;
+		setPriceCode(priceCode);
+	}
+	
+	public int getPriceCode() {
+		return _priceCode;
+	}
+	
+	public String getTitle() {
+		return _title;
+	}
+
+	public void setPriceCode(int arg) {
+		switch(arg) {
+			case Movie.REGULAR:
+				_price = new RegularPrice();
+				
+				break;
+			case Movie.NEW_RELEASE:
+				_price = new ChildrensPrice();
+				break;
+			case Movie.CHILDRENS:
+				_price = new NewReleasesPrice();
+				break;
+			default:
+				throw new IllegalArgumentException("가격 코드가 잘못됐습니다.");
+		}
+	}
+	
+	public double getCharge(int _daysRented) {
+		return _price.getCharge(_daysRented);
+	}
+	
+	int getFrequentRenterPoints(int daysRented) {
+		return _price.getFrequentRenterPoints(daysRented);
+	}
+}
+```
+
+```java
+public class Rental {
+	private Movie _movie;
+	private int _daysRented;
+	
+	public Rental(Movie movie, int dayRented) {
+		_movie = movie;
+		_daysRented = dayRented;
+	}
+
+	public Movie getMovie() {
+		return _movie;
+	}
+
+	public int getDaysRented() {
+		return _daysRented;
+	}
+
+	int getFrequentRenterPoints() {
+		return _movie.getFrequentRenterPoints(_daysRented);
+	}
+	
+	double getCharge() {
+		return _movie.getCharge(_daysRented);
+	}
+}
+```
+
+```java
+public class Customer {
+	private String _name;
+	private Vector<Rental> _rentals = new Vector<Rental>();
+	
+	public Customer(String name) {
+		_name = name;
+	}
+	
+	public void addRental(Rental arg) {
+		_rentals.add(arg);
+	}
+	
+	public String getName() {
+		return _name;
+	}
+	
+	public String statement() {
+		Enumeration<Rental> rentals = _rentals.elements();
+		String result = getName() + " 고객님의 대여 기록\n";
+		
+		while (rentals.hasMoreElements()) {
+			Rental each = rentals.nextElement();
+			result += "\t" + each.getMovie().getTitle() + "\t" + String.valueOf(each.getCharge()) + "\n";
+		}
+		
+		result += "누적 대여료: " + String.valueOf(getTotalCharge()) + "\n";
+		result += "적립 포인트: " + String.valueOf(getTotalFrequentRenterPoints());
+		
+		return result;
+	}
+
+	private int getTotalFrequentRenterPoints() {
+		int result = 0;
+		Enumeration<Rental> rentals = _rentals.elements();
+		
+		while (rentals.hasMoreElements()) {
+			Rental each = rentals.nextElement();
+			result += each.getFrequentRenterPoints();
+		}
+		
+		return result;
+	}
+
+	private double getTotalCharge() {
+		double result = 0;
+		Enumeration<Rental> rentals = _rentals.elements();
+		
+		while (rentals.hasMoreElements()) {
+			Rental each = rentals.nextElement();
+			result += each.getCharge();
+		}
+		
+		return result;
+	}
+	
+	public String htmlStatement() {
+		String result = "<H1><EM>" + getName() + " 고객님의 대여 기록</EM></H1><P>\n";
+		Enumeration<Rental> rentals = _rentals.elements();
+		
+		while (rentals.hasMoreElements()) {
+			Rental each = rentals.nextElement();
+			result += each.getMovie().getTitle() + ": " + String.valueOf(each.getCharge()) + "<BR>\n";
+		}
+		
+		result += "<P>누적 대여료: <EM>" + String.valueOf(getTotalCharge()) + "</EM><P>\n";
+		result += "적립 포인트: <EM>" + String.valueOf(getTotalFrequentRenterPoints()) + "</EM><P>";
+		
+		return result;
+	}	
+}
+```
+
+* 이렇게 하면 대여료 계산 방식을 변경하거나
+* 새 대여료를 추가하거나
+* 부수적인 대여료 관련 동작을 추가할 때 아주 쉽게 수정할 수 있다.
+* 위처럼 적용하는 것을 상태 패턴이라고 한다.
+* 상태 패턴 적용후 클래스 호출 관계
+
+![]({{site.url}}/assets/images/ref17.PNG)
 
 
 
-
-
+##### ''간단한 수정 -> 테스트'' 를 리듬처럼 반복하는 것이 가장 중요
