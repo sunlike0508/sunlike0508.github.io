@@ -13,7 +13,7 @@ last_modified_at: 2020-07-09
 
 # 리펙토링 개론
 
-![]({{site.url}}/assets/images/ref01.PNG)
+
 
 ### 1. 리펙토링은 무엇인가?
 
