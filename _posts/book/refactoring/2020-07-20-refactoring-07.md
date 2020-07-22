@@ -841,29 +841,588 @@ public class Customer {
 
 
 
+### 8. 클래스의 양방향 연결을 단방향으로 전환
+
+* 두 클래스가 양방향으로 연결되어 있는데 한 클래스가 다른 클래스의 기능을 더 이상 사용하지 않게 됐을 땐 불필요한 방향의 연결을 끊자.
 
 
 
+#### 8.1 동기
+
+* 양방향 연결을 유지하고 객체가 적절히 생성되고 제거되는지 확인하는 복잡함이 더해진다.
+* 양방향 연결이 익숙하지 않은 대부분의 프로그래머는 에러를 발생시킨다.
+* 양방향 연결이 많으면 좀비 객체가 발생하기도 한다.
+* 좀비 객체란 참조가 삭제되지 않아 제거되어야 함에도 남아서 떠도는 객체를 뜻한다.
+* 양방향 연결로 인해 두 클래스는 서로 종속된다.
+* 한 클래스를 수정하면 수정하면 다른 클래스도 변경된다.
+* 종속성이 많으면 시스템의 결합력이 강해져서 사소한 수정에도 예기치 못한 각종 문제가 발생한다.
 
 
 
+#### 8.2 방법
+
+* 삭제하려는 포인터가 저장된 필드를 읽는 모든 부분을 검사해서 삭제해도 되는지 파악하자.
+  * 필드를 직접 읽는 메서드와 그 메서드를 호출하는 다른 메서드도 살펴보자.
+  * 포인터를 사용하지 않고 다른 객체를 알아내는 것이 가능한지 보고, 가능하다면 속성 읽기 메서드에 알고리즘 전환을 실시해서 참조 코드가 포인터 없이 속성 읽기 메서드를 사용할 수 있게 하자.
+* 참조 코드가 속성 읽기 메서드를 사용해야 한다면 속성 읽기 메서드에 필드 자체 캡슐화를 적용하고 알고리즘 전환을 적용한 후 테스트를 실시하자.
+* 참조코드에 읽기 메서드 호출을 넣을 필요가 없다면, 각 필드 사용 부분을 찾아서 필드 안의 객체를 다른 방법으로 가져오게끔 수정하자.
+* 필드 안의 속성 읽기 메서드를 모두 삭제했으면 필드 업데이트 코드 전부와 필드를 삭제하자.
+  * 필드에 값을 할당하는 여러 군데 있다면 필드 자체 캡슐화를 실시해서 그 모든 부분이 한 개의 속성쓰기 메서드를 사용하게 하자. 테스트를 실시한 후 속성 쓰기 메서드를 빈 메서드로 만들고 다시 테스트한다. 오류가 없으면 필드, 속성 읽기 메서드, 모든 속성 쓰기 메서드 호출 코드를 삭제하자.
 
 
 
+#### 8.3 예제
+
+```java
+public class Order {
+    Customer customer;
+    
+	double getDiscountedPrice() {
+		return getGrossPrice() * (1 - customer.getDiscount());
+	}
+}
+```
+
+```java
+public class Order {
+	double getDiscountedPrice(Customer customer) {
+		return getGrossPrice() * (1 - customer.getDiscount());
+	}
+}
+```
+
+* 책에서 자세히 나와 있는데 내가 볼 땐 "클래스 단방향에서 양방향으로" 예제랑 반대 같음.
 
 
 
+### 9. 마법 숫자를 기호 상수로 전환
+
+* 특수 의미를 지닌 리터럴 숫자가 있을 땐 의미를 살린 이름의 상수를 작성한 후 리터럴 숫자를 그 상수로 교체하자.
+
+```java
+double potentialEnergy(double mass, double height) {
+	return mass * 9.81 * height;
+}
+```
+
+```java
+static final double GRAVITIATONAL_CONSTANT = 9.81;
+
+double potentialEnergy(double mass, double height) {
+    return mass * GRAVITIATONAL_CONSTANT * height;
+}
+```
 
 
 
+### 10. 필드 캡슐화
+
+* public 필드는 private으로 만들고 읽기 /쓰기 메서드를 만들자
 
 
 
+### 11. 컬렉션 캡슐화
+
+* 메서드가 컬렉션을 반환할 땐, 그 메서드가 읽기 전용 뷰를 반환하게 수정하고 추가 메서드와 삭제 메서드를 작성하자.
 
 
 
+#### 11.1 동기
+
+* 컬렉션은 다른 종류의 데이터와는 약간 다른 읽기/쓰기 방식을 사용해야 한다.
+* 읽기 메서드는 컬렉션 객체 자체를 반환해서는 안된다.
+* 왜냐하면 컬렉션 참조 부분이 컬렉션의 내용을 조작해도 그 컬렉션이 든 클래스는 무슨 일이 일어나는지 모르기 때문이다.
+* 쓰기 메서드는 절대 있으면 안되므로, 원소를 추가하는 메서드와 삭제하는 메서드를 대신 사용해야 한다.
+* 이렇게 하면 컬렉션이 든 객체가 든 객체가 컬렉션의 원소 추가와 삭제를 통제할 수 있다.
+* 이렇게 하면, 컬렉션 참조 부분에 대한 종속성이 줄어든다.
 
 
+
+#### 11.2 방법
+
+* 컬렉션 원소를 추가, 삭제 메서드를 작성한다.
+* 필드를 빈 컬렉션으로 초기화하자.
+* 쓰기 메서드 호출 부분을 찾아서 add 메서드오 remove 메서드 호출로 바꾸든지, 그 위치에 직접 컬렉션에 원소를 추가하고 삭제하는 코드를 작성하자.
+  * 쓰기 메서드가 사용되는 경우는 두 가지다. 첫째는 컬렉션이 비어 있을 때고, 둘째는 비어 있지 않은 컬렉션을 교체할 때다.
+  * 메서드명 변경을 실시
+* set이라는 이름을 initialized나 replace로 변경
+* 읽기 메서드를 호출하여 컬렉션을 변경하는 부분을 전부 찾아서 add 메서드, remove 메서드 호출로 바꾸자.
+* 컬렉션을 변경하고자 읽기 메서드를 호출하는 부분을 전부 추가/삭제 메서드 호출로 고쳤으면, 컬렉션의 읽기 전용 뷰를 반환하게 읽기 메서드를 수정하자.
+* 읽기 메서드 호출부분을 찾고 컬렉션이 컬렉션이 든 객체로 옮겨야 할 코드를 찾아서 메서드 추출과 메서드 이동을 실시해서 컬렉션이 든 객체로 옮기자.
+
+
+
+#### 11.2 예제
+
+* 한 사람이 여러 과정을 수강한다.
+* 수강 과정을 나타내는 course 클래스는 다음과 같다.
+
+```java
+public class Course {
+	public Course (String name, boolean isAdvanced) {
+		
+	}
+	
+	public boolean isAdvance() {
+		
+	}
+}
+```
+
+```java
+class Person {
+	Set<Course> courses;
+	
+	public Set getCourses() {
+		return courses;
+	}
+	
+	public void setCouses(Set arg) {
+		courses = arg;
+	}
+}
+```
+
+* 앞의 인터페이스를 이용하여 과정을 추가하는 코드와 고급과정을 알아내는 코드는 다음과 같다.
+
+```java
+Person kent = new Person();
+Set s = new HashSet();
+s.add(new Course("스몰토크 프로그래밍", false));
+s.add(new Course("싱글몰트 위스키 음미하기", true));
+kent.setCouses(s);
+// 여기에 assert 있어야 함
+Course refact = new Course("리팩토링", true);
+kent.getCourses().add(refact);
+kent.getCourses().add(new Course("지독한 빈정거림", false));
+// 여기도 assert
+kent.getCourses().remove(refact);
+// 여기도 assert
+```
+
+```java
+public class Course {
+	String name;
+	boolean isAdvanced;
+	
+	public Course (String name, boolean isAdvanced) {
+		this.name = name;
+		this.isAdvanced = isAdvanced;
+	}
+	
+	public boolean isAdvance() {
+		return isAdvanced;
+	}
+	
+	int countAdvance(Person person) {
+		
+		Iterator iter = person.getCourses().iterator();
+		int count = 0;
+		
+		while(iter.hasNext()) {
+			Course each = (Course) iter.next();
+			
+			if(each.isAdvance()) {
+				count++;
+			}
+		}
+		
+		return count;
+	}
+}
+```
+
+* 이때 다음과 같이 적절한 컬렉션 변경 메서드를 작성한다.
+* courses 초기화하면 더 좋다.
+
+```java
+class Person {	
+    Set<Course> courses = new HashSet<Course>();
+    
+	public void addCourse(Course arg) {
+		courses.add(arg);
+	}
+	
+	public void remove(Course arg) {
+		courses.remove(arg);
+	}
+}
+```
+
+* 다음 쓰기 메서드 호출 부분을 관찰하자.
+* 참조 부분이 여러 곳이고 쓰기 메서드가 많이 사용된다면 쓰기 메서드 내용을 추가/삭제 기능의 코드도 바꿔야 한다.
+* 이 과정은 쓰기 메서드의 사용 방식에 따라 복잡한 정도가 둘로 나뉜다.
+* 간단한 경우는 참조 부분이 쓰기 메서드를 호출해서 값을 초기화할 때다.
+* 즉, 쓰기 메서드가 적용되기 전에 과정이 없는 경우다.
+* 이럴 땐 쓰기 메서드 내용을 다음과 같이 과정 추가 메서드 호출로 바꾸면 된다.
+* 동시에 메서드 이름을 바꾼다. (기능적 의미를 더 분명히 전달)
+
+```java
+class Person {
+	Set<Course> courses = new HashSet<Course>();
+	
+	public void initializeCourses(Set arg) {
+		assertTrue(courses.isEmpty());
+		
+		Iterator iter = arg.iterator();
+		
+		while(iter.hasNext()) {
+			addCourse((Course) iter.next());
+		}
+	}
+}
+```
+
+* 초기화하려고 원소를 추가할 때 추가 기능이 확실히 필요 없다면 다음과 같이 루프를 삭제하고 addAll 메서드 사용한다.
+
+```java
+public void initializeCourses(Set arg) {
+    assertTrue(courses.isEmpty());		
+    courses.addAll(arg);
+}
+```
+
+* 이전 세트가 비어 있더라고 그 세트에 직접 대입할 순 없다.
+* 참조 부분이 전달 후 그 세트를 수정한다면 캡슐화에 위배된다.
+* 그래서 복사해 둬야 한다.
+* 참조 부분이 단순히 세트를 생성하고 쓰기 메서드를 사용한다면 다음과 같이 그 참조 부분의 add 메서드와 remove 메서드를 직접 사용하게 수정하고 쓰기 메서드를 삭제하면 된다.
+
+```java
+Person kent = new Person();
+Set s = new HashSet();
+s.add(new Course("스몰토크 프로그래밍", false));
+s.add(new Course("싱글몰트 위스키 음미하기", true));
+kent.initializeCourses(s);
+```
+
+```java
+Person kent = new Person();
+kent.addCourse(new Course("스몰토크 프로그래밍", false));
+kent.addCourse(new Course("싱글몰트 위스키 음미하기", true));
+```
+
+* 읽기 메서드는 다음과 같다
+
+```java
+kent.addCourse(new Course("지독한 빈정거림", false));
+```
+
+* 모든 읽기 메서드 호출 부분을 수정했으면 다음과 같이 읽기 메서드의 내용을 수정불가 뷰를 반환하게 수정해서 읽기 메서드를 통해 수정하는 부분이 없는지 확인하자.
+
+```java
+class Person {
+	Set<Course> courses = new HashSet<Course>();
+	
+	public Set getCourses() {
+		return Collections.unmodifiableSet(courses);
+	}
+}
+```
+
+* 이제 컬렉션을 캡슐화 한다.
+
+* countAdvance의 메서드는 person에서 하는게 좋다. Person 클래스로 옮긴다.
+
+```java
+class Person {
+	private Set<Course> courses = new HashSet<Course>();
+	
+	public Set getCourses() {
+		return Collections.unmodifiableSet(courses);
+	}
+	
+	public void initializeCourses(Set arg) {
+		assertTrue(courses.isEmpty());
+		
+		Iterator iter = arg.iterator();
+		
+		while(iter.hasNext()) {
+			addCourse((Course) iter.next());
+		}
+		
+		courses.addAll(arg);
+	}
+	
+	public void addCourse(Course arg) {
+		courses.add(arg);
+	}
+	
+	public void remove(Course arg) {
+		courses.remove(arg);
+	}
+	
+	int countAdvance() {
+		
+		Iterator iter = getCourses().iterator();
+		int count = 0;
+		
+		while(iter.hasNext()) {
+			Course each = (Course) iter.next();
+			
+			if(each.isAdvance()) {
+				count++;
+			}
+		}
+		
+		return count;
+	}
+}
+```
+
+
+
+### 12. 레코드를 데이터 클래스로 전환
+
+* 전통적인 프로그래밍 환경에서 레코드 구조를 이용한 인터페이스를 제공해야 할 땐 레코드 구조를 저장할 덤 데이터 객체를 작성하자.
+
+
+
+#### 12.1 동기
+
+* 레코드 구조를 사용할 경우 외부 요소를 처리할 인터페이스 역할을 하는 클래스를 작성하는 것이 좋다.
+* 다른 필드와 메서드는 나중에 옮기면 된다.
+
+
+
+#### 12.2 방법
+
+* 레코드를 표현할 클래스를 작성하자.
+
+* 그 클래스에 각 데이터 항목에 대한 읽기/쓰기 메서드를 작성하고 private 필드를 선언하자.
+
+* 이 객체에는 아직 기능이 없지만 추후 소개할 기법에서 기능 추가에 대해 설명한다.
+
+  
+
+### 13. 분류 부호를 클래스로 전환
+
+* 기능에 영향을 미치는 숫자형 분류 부호가 든 클래스가 있을 땐 그 숫자를 새 클래스로 바꾸자.
+
+
+
+#### 13.1 동기
+
+* 숫자형 분류 부호, 즉, 열거 타입은 코드를 이해하기 쉬워지나 그것 뿐이다.
+* 분류부호를 인자로 받는 모든 메서드는 숫자만을 인자로 받으며, 상징적 이름을 전달할 방법은 없다.
+* 그래서 코드를 이해하기 힘들어질 수 있고 버그가 생길 수도 있다.
+
+* 숫자형 분류 부호를 클래스로 빼내면 컴파일러는 그 클래스 안에서 종류 판단을 수행할 수 있다.
+* 그 클래스 안에 팩토리 메서드를 작성하면 유효한 인스턴스만 생성되는지와 그런 인스턴스가 적절한 객체로 전달되는지를 정적으로 검사할 수 있다.
+* 그렇다고 무작정하는 것이 아니라 그 전에 분류 부호를 다른 것으로 전환하는 방안을 고려한다.
+* 분류 부호를 클래스로 만드는 건 분류 부호가 순수한 데이터일 때만 실시해야 한다.
+* 다시 말해, 분류 부호가 switch 문안에 사용되어 다른 기능을 수행하거나 메서드를 호출할 땐 클래스로 전환하면 안 된다.
+* switch문에는 임의의 클래스를 사용할 수 없으며 오직 정수 타입만 사용 가능하므로 클래스로의 전환은 실패를 맞게 된다.
+* 더 중요한 건, 모든 switch문은 조건문을 재정의로 전환 기법을 적용해 전부 없애야 하는 대상이다.
+* 분류 부호가 값에 따라 다른 기능을 호출하지 않더라도 분류 부호 클래스로 만들면 더 좋은 기능이 있을 수도 있으므로, 메서드 이동 기법을 한두 차례 실시할 것을 고려하자.
+
+
+
+#### 13.2 방법
+
+* 분류 부호의 종류를 판단할 새 클래스를 작성하자.
+  * 그 클래스 안에 분류 부호와 대응하는 code 필드를 선언하고 그 값을 읽을 읽기 메서드를 작성하자. 
+  * 그 클래스에서 생성이 허용되는 인스턴스를 저정할 static 변수와, 원래의 클래스에 따라 다른 인자를 받아서 적절한 인스턴스를 반환하는 static 메서드를 저장한 static 변수도 선언해야 한다.
+* 새 클래스를 사용하게 원본 클래스의 내용을 수정하자.
+  * 기존 코드를 사용하는 인터페이스는 그대로 놔두되, static 필드는 새 클래스를 통해 코드를 생성하게 수정하자.
+  * 다른 코드를 사용하는 메서드도 새 클래스에서 부호 숫자를 읽게 수정하자.
+* 원본 클래스 코드를 사용하는 원본 클래스 안의 각 메서드마다, 그에 대응하는 새 클래스를 사용하는 새 메서드를 작성하자.
+  * 코드를 인자로 받는 메서드는 새 클래스의 인스턴스를 인자로 받는 새 메서드로 바꿔야 한다.
+  * 코드를 반환하는 메서드는 새 클래스 인스턴스를 반환하는 새 메서드로 바꿔야 한다.
+  * 기존 코드를 사용하는 프로그램을 더욱 이해하기 쉽게 만들려면 새 읽기/쓰기 메서드를 작성하기 전에 기존의 읽기/쓰기 메서드에 메서드명 변경을 적용해야 한다.
+* 원본 클래스 호출 부분을 한 번에 하나씩 새 인터페이스 호출로 수정하자.
+* 전부 수정했으면 컴파일과 테스트를 실시하자.
+  * 컴파일과 테스트 결과가 일관되게 나오기까지 여러 메서드를 수정해야 할 가능성도 있다.
+* 기존 코드를 사용하는 기존 인터페이스를 삭제하고, 기존 코드의 static 변수 선언도 삭제하자.
+
+
+
+#### 13.3 예제
+
+* Person 클래스에는 혈액형 그룹이 있다.
+
+```java
+class Person {
+	public static final int O = 0;
+	public static final int A = 1;
+	public static final int B = 2;
+	public static final int AB = 3;
+	
+	private int bloodGroup;
+	
+	public Person (int bloodGroup) {
+		this.bloodGroup = bloodGroup;
+	}
+	
+	public void setBllodGroup(int arg) {
+		this.bloodGroup = arg;
+	}
+	
+	public int getBloodGroup() {
+		return bloodGroup;
+	}
+}
+```
+
+* 먼저 다음과 같이 혈액형 그룹을 판단할 BloodGroup 클래스를 작성하고, 분류 부호 숫자가든 인스턴스를 작성하자.
+
+```java
+public class BloodGroup {
+	public static final BloodGroup O = new BloodGroup(0);
+	public static final BloodGroup A = new BloodGroup(1);
+	public static final BloodGroup B = new BloodGroup(2);
+	public static final BloodGroup AB = new BloodGroup(3);
+	
+	private final int code;
+	
+	private BloodGroup(int code) {
+		this.code = code;
+	}
+	
+	public int getCode() {
+		return this.code;
+	}
+	
+	public static BloodGroup code(int arg) {
+		return values(arg);
+	}
+}
+```
+
+
+
+* Person 클래스의 코드를 수정해서 새 클래스를 사용하게 하자.
+
+```java
+class Person {
+	public static final int O = BloodGroup.O.getCode();
+	public static final int A = BloodGroup.A.getCode();
+	public static final int B = BloodGroup.B.getCode();
+	public static final int AB = BloodGroup.AB.getCode();
+	
+	private BloodGroup bloodGroup;
+	
+	public Person (int bloodGroup) {
+		this.bloodGroup = BloodGroup.code(bloodGroup);
+	}
+	
+	public void setBloodGroup(int arg) {
+		this.bloodGroup = BloodGroup.code(arg);
+	}
+	
+	public int getBloodGroup() {
+		return bloodGroup.getCode();
+	}
+}
+```
+
+* 이것으로써 BloodGroup 클래스 안에서 런타임 분류 부호 검사가 이뤄진다.
+* 이 수정에서 진정한 효과를 얻으려면 Person 클래스 사용 부분이 int 타입 대신 bloodGroup을 사용하게 해야 한다.
+* 우선 Person 클래스의 bloodGroup을 읽는 읽기 메서드명 변경을 적용해서 변경된 코드를 이해하기 쉽게 만들자.
+
+* 새 클래스를 사용하는 읽기 메서드를 작성하자.
+* 생성자 메서드와 새 클래스를 사용하는 쓰기 메서드도 작성하자.
+
+```java
+class Person {
+	public static final int O = BloodGroup.O.getCode();
+	public static final int A = BloodGroup.A.getCode();
+	public static final int B = BloodGroup.B.getCode();
+	public static final int AB = BloodGroup.AB.getCode();
+	
+	private BloodGroup bloodGroup;
+	
+	public Person (int bloodGroup) {
+		this.bloodGroup = BloodGroup.code(bloodGroup);
+	}
+	
+	public void setBloodGroup(int arg) {
+		this.bloodGroup = BloodGroup.code(arg);
+	}
+	// 수정함. getBloodGroupCode 함수가 생기므로
+	public BloodGroup getBloodGroup() {
+		return bloodGroup;
+	}
+	// 아래 새로 추가
+	public Person (BloodGroup bloodGroup) {
+		this.bloodGroup = bloodGroup;
+	}
+	
+	public int getBloodGroupCode() {
+		return bloodGroup.getCode();
+	}	
+	
+	public void setBloodGroup(BloodGroup arg) {
+		this.bloodGroup = arg;
+	}
+}
+```
+
+* 이제 Person 클래스 사용 부분을 수정한다.
+* static 변수 참조 부분은 전부 다음과 같이 수정해야 한다.
+
+```java
+Person thePerson = new Person(Person.A); 	//  수정 전
+Person thePerson = new Person(BloodGroup.A); // 수정 후
+```
+
+* 읽기 메서드 호출 부분은 다음과 같이 수정한다.
+
+```java
+thePerson.getBloodGroupCode();		//수정 전
+thePerson.getBloodGroup().getCode();//수정 후
+```
+
+* 쓰기 메서드도 똑같다.
+
+```java
+thePerson.setBloodGroup(Person.AB);
+thePerson.setBloodGroup(BloodGroup.AB);
+```
+
+* Person 클래스 사용 부분을 전부 수정했으면 읽기, 생성자, static 변수, 정수 타입을 사용하는 쓰기 메서드를 삭제한다.
+* 그리고 BloodGroup 클래스에 있는 숫자형 부호 사용 메서드를 private 타입으로 만든다.
+
+```java
+class Person {
+	
+	private BloodGroup bloodGroup;
+	
+	public BloodGroup getBloodGroup() {
+		return bloodGroup;
+	}
+	
+	public Person (BloodGroup bloodGroup) {
+		this.bloodGroup = bloodGroup;
+	}
+	
+	public void setBloodGroup(BloodGroup arg) {
+		this.bloodGroup = arg;
+	}
+}
+```
+
+```java
+public class BloodGroup {
+	public static final BloodGroup O = new BloodGroup(0);
+	public static final BloodGroup A = new BloodGroup(1);
+	public static final BloodGroup B = new BloodGroup(2);
+	public static final BloodGroup AB = new BloodGroup(3);
+	
+	private final int code;
+	
+	private BloodGroup(int code) {
+		this.code = code;
+	}
+	
+	private int getCode() {
+		return this.code;
+	}
+	
+	private static BloodGroup code(int arg) {
+		return values(arg);
+	}
+}
+```
 
 
 
