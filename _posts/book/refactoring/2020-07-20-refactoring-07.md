@@ -1426,7 +1426,580 @@ public class BloodGroup {
 
 
 
+### 14. 분류 부호를 하위클래스로 전환
+
+* 클래스 기능에 영향을 주는 변경불가 분류 부호가 있을 땐 분류 부호를 하위클래스로 만들자.
 
 
 
+#### 14.1 동기
 
+* 클래스 기능에 영향을 주지 않는 분류 부호가 있을 땐 분류 부호를 클래스로 전환기법을 실시하면 된다.
+* 그러나 분류 부호가 클래스 기능에 영향을 준다면 재정의를 통해 조금씩 다른 기능을 처리하는 것이 최선이다.
+* 분류 부호가 클래스 기능에 영향을 미치는 현상은 조건문이 있을 때 주로 나타난다.
+* 어느 조건문이든 분류 부호의 값을 검사해서 그 값에 따라 다른 코드를 실행한다.
+* 이런 조건문은 조건문을 재정의로 전환을 실시해서 재정의로 바꿔야 한다.
+* 이 기법이 효과를 보려면 분류 부호를 다형화된 기능이 든 상속 구조로 고쳐야 한다.
+* 그런 상속 구조는 하나의 클래스와 각 분류 부호에 대한 하위클래스로 구성된다.
+* 제일 쉬운 방법은 분류 후호를 하위 클래스로 전환을 실시하는 것
+* 분류 부호가 든 클래스 코드를 이용해 각 분류 부호별 하위클래스를 작성하자.
+* 단, 기법을 적용할 수 없는 몇 가지 경우는 다음과 같다.
+
+1. 분류 부호의 값이 객체 생성 후 변할 때
+2. 다은 이유로 분류 부호를 이미 하위클래스로 만들었을 때
+3. 분류 부호를 상태/전략 패턴으로 전환을 실시해야 할 때
+
+
+
+#### 14.2 방법
+
+* 분류 부호를 자체 캡슐화하자.
+  * 분류 부호가 생성자 메서드로 전달될 땐 생성자 메서드를 팩토리 메서드로 바꿔야 한다.
+* 각 분류 부호 값마다 그에 해당하는 하위클래스를 작성하자. 그 하위클래스 안에 관련 값을 반환하는 분류 부호 읽기 메서드를 재정의하자.
+  * 반환 값은 return  같이 return 문으로 하드 코딩된다. 복잡해 보여도 모든 case 문을 수정할 때 까진 임시방편으로 취하는 불가피한 조치다.
+* 상위 클래스의 분류 부호 필드를 삭제하자. 분류 부호 읽기 메서드와 쓰기 메서드를 abstract 타입으로 선언하자.
+
+
+
+#### 14.3 예제
+
+```java
+public class Employee {
+	private int type;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	public Employee(int type) {
+		this.type = type;
+	}
+}
+```
+
+* 우선 분류 부호에 필드 자체 캡슐화 기법을 적용하자.
+
+```java
+public class Employee {
+	private int type;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	public Employee(int type) {
+		this.type = type;
+	}
+	
+	int getType() {
+		return type;
+	}
+}
+
+```
+
+* Employee 클래스의 생성자 메서드가 분류 부호를 매개변수로 받으니까, 그 생성자 메서드를 다음과 같이 팩토리 메서드로 바꿔야 한다.
+
+```java
+public class Employee {
+	private int type;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	int getType() {
+		return type;
+	}
+	
+	Employee create(int type) {
+		return new Employee(type);
+	}
+	
+	private Employee (int type) {
+		this.type = type;
+	}
+}
+```
+
+* 먼저 분류 부호 ENGINEER 변수를 Engineer 하위 클래스로 만들자. 다음과 같이 하위클래스를 작성하고 ENGINEER 분류 부호에 해당하는 재정의 메서드를 작성하자.
+
+```java
+public class Engineer extends Employee{
+	int getType() {
+		return Employee.ENGINEER;
+	}
+}
+```
+
+* 적절한 객체를 생성하게 팩토리 메서드도 다음과 같이 작성한다.
+
+```java
+public class Employee {
+	private int type;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	int getType() {
+		return type;
+	}
+	
+	static Employee create(int type) {
+		if(type == ENGINEER) {
+			return new Engineer(type);
+		}
+		
+		return new Employee(type);
+	}
+	
+	private Employee (int type) {
+		this.type = type;
+	}
+}
+```
+
+* 이런 식으로 나머지 분류 부호도 바꾼다. 
+* (여기까지 작성했는데 Employee에서 생성자 오류가 나는데 일단 내맘대로 작성함)
+* 그리고 Employee 클래스의 분류 부호 필드를 삭제하고 abstract 타입의 getType 메서드를 작성한다.
+
+```java
+public abstract class Employee {
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	abstract int getType();
+	
+	static Employee create(int type) {
+		if(type == ENGINEER) {
+			return new Engineer(type);
+		} else if(type == SALESMAN) {
+			return new Salesman(type);
+		} else if(type == MANAGER) {
+			return new Manager(type);
+		} else {
+			throw new IllegalArgumentException("분류 부호 값이 잘못됨");
+		}
+	}
+}
+```
+
+* (책에서는 switch를 했는데 나는 그냥 if로 함)
+* 이거 이후에 메서드 하향과 필드 하향을 실시한다.
+
+
+
+### 15. 분류 부호를 상태/전략 패턴으로 전환
+
+* 분류 부호가 클래스의 기능에 영향을 주지만 하위클래스로 전환할 수 없을 땐 그 분류 부호를 상태 객체로 만들자.
+
+
+
+#### 15.1 동기
+
+* 하위클래스로 전환과 비슷하지만, 분류 부호가 객체 수명주기 동안 변할 때나 다른 이유로 하위클래스로 만들 수 없을 때 사용한다.
+* 이 기법은 상태 or 전략 패턴 중 하나를 사용한다.
+* 조건문을 재정의로 전환으로 하나의 알고리즘을 단순화해야 할 때는 전략이 더 적절
+* 상태별 데이터를 이동하고 객체를 변화하는 상태로 생각할 때는 상태 패턴이 더 적절
+
+
+
+#### 15.2 방법
+
+* 분류 부호를 자체 캡슐화하자.
+* 분류 부호의 목적을 나타내는 이름으로 새 클래스를 작성하자. 이것이 상태 객체이다.
+* 그 상태 객체에 각 분류 부호에 해당하는 하위클래스를 추가하자
+  * 하위클래스 추가는 한 번에 하나씩보단 한꺼번에 추가하는 것이 간편하다.
+* 상태 객체 안에 분류 코드를 반환하는 abstract 메서드 호출을 작성하자. 올바른 분류 부호를 반환하는 상태 객체 하위클래스 각각에 대한 재정의 메서드 호출을 작성하자.
+* 원본 클래스 안에 새 상태 객체를 나타내는 필드를 선언하자.
+* 원본 클래스에 있는 분류 부호 판단 코드를 상태 객체에 위임하게 수정하자.
+* 원본 클래스의 분류 부호 쓰기 메서드를 적절한 상태 객체 하위클래스의 인스턴스를 할당하게 수정하자.
+
+
+
+#### 15.3 예제
+
+* 아래 코드가 있다고 가정
+
+```java
+public class Employee {
+	private int type;
+	private int monthlySalary;
+	private int commission;
+	private int bonus;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	public Employee(int type) {
+		this.type = type;
+	}
+	
+	int payAmout() {
+		switch (type) {
+			case ENGINEER:
+				return monthlySalary;
+			case SALESMAN:
+				return monthlySalary + commission;
+			case MANAGER:
+				return monthlySalary + bonus;
+			default:
+				throw new RuntimeException("사원이 잘못됨");
+		}
+	}
+}
+```
+
+* 분류 부호가 수시로 변하므로 하위 클래스로 만들 수 없다.
+* 우선 분류 부호를 자체 캡슐화 한다.
+
+```java
+public class Employee {
+	private int type;
+	private int monthlySalary;
+	private int commission;
+	private int bonus;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	public Employee(int type) {
+		setType(type);
+	}
+	
+	int getType() {
+		return type;
+	}
+	
+	void setType(int arg) {
+		type = arg;
+	}
+
+	int payAmout() {
+		switch (getType()) {
+			case ENGINEER:
+				return monthlySalary;
+			case SALESMAN:
+				return monthlySalary + commission;
+			case MANAGER:
+				return monthlySalary + bonus;
+			default:
+				throw new RuntimeException("사원이 잘못됨");
+		}
+	}
+}
+```
+
+* 이제 상태 클래스를 선언하자.
+* 상태 클래스를 abstract 타입으로 선언하고 그 안에 분류 부호를 반환하는 abstract 메서드를 다음과 같이 작성한다.
+
+```java
+public abstract class EmployeeType {
+	abstract int getTypeCode();
+}
+```
+
+* 분류 부호별 하위 클래스 작성
+
+```java
+public class Engineer extends EmployeeType{
+	
+	@Override
+	int getTypeCode() {
+		return Employee.ENGINEER;
+	}
+}
+```
+
+* 분류 부호 읽기/쓰기 메서드를 수정해서 하위클래스를 Employee 클래스에 실제로 연결한다.
+
+```java
+public class Employee {
+	private EmployeeType type;
+	private int monthlySalary;
+	private int commission;
+	private int bonus;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	public Employee(int type) {
+		setType(type);
+	}
+	
+	int getType() {
+		return type.getTypeCode();
+	}
+	
+	void setType(int arg) {
+		switch(arg) {
+			case ENGINEER:
+				type = new Engineer();
+			case SALESMAN:
+				type = new Salesman();
+			case MANAGER:
+				type = new Manager();
+			default:
+				throw new RuntimeException("사원 부호가 잘못됨");
+		}
+	}
+
+	int payAmout() {
+		switch (getType()) {
+			case ENGINEER:
+				return monthlySalary;
+			case SALESMAN:
+				return monthlySalary + commission;
+			case MANAGER:
+				return monthlySalary + bonus;
+			default:
+				throw new RuntimeException("사원이 잘못됨");
+		}
+	}
+}
+```
+
+* 생성자를 팩토리 메서드로 전환 기법을 사용할 수 있다.
+* 조건문을 재정의로 전환기법을 재빨리 사용할 수도 있다.
+* 이제 우선 분류 부호 정의를 EmployeeType으로 복사하고, EmployeeType에 대한 팩토리 메서드를 작성한 후, Employee 클래스의 쓰기 메서드를 수정하자.
+* 그리고 Employee 클래스에서 분류 부호 정의를 삭제하고 EmployeeType 클래스 참조를 넣는다.
+
+```java
+public class Employee {
+	private EmployeeType type;
+	private int monthlySalary;
+	private int commission;
+	private int bonus;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	public Employee(int type) {
+		setType(type);
+	}
+	
+	int getType() {
+		return type.getTypeCode();
+	}
+	
+	void setType(int arg) {
+		type = EmployeeType.newType(arg);
+	}
+
+	int payAmout() {
+		switch (getType()) {
+			case ENGINEER:
+				return monthlySalary;
+			case SALESMAN:
+				return monthlySalary + commission;
+			case MANAGER:
+				return monthlySalary + bonus;
+			default:
+				throw new RuntimeException("사원이 잘못됨");
+		}
+	}
+}
+```
+
+```java
+public abstract class EmployeeType {
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	abstract int getTypeCode();
+
+	public static EmployeeType newType(int code) {
+		switch(code) {
+			case ENGINEER:
+				return new Engineer();
+			case SALESMAN:
+				return new Salesman();
+			case MANAGER:
+				return new Manager();
+			default:
+				throw new RuntimeException("사원 부호가 잘못됨");
+		}
+	}
+}
+```
+
+* 이것으로 payAmount 메서드에 조건문을 재정의로 전환 기법을 적용할 수 있게 됐다.
+
+
+
+### 16. 하위클래스를 필드로 전환
+
+* 여러 하위클래스가 상수 데이터를 반환하는 메서드만 다를 땐 각 하위클래스의 메서드를 상위클래스 필드로 전환하고 하위클래스는 전부 삭제하자.
+
+
+
+#### 16.1 동기
+
+* 기능을 추가하거나 기능을 조금씩 달리할 하위클래스를 작성하자.
+* 다형적인 기능의 한 형태는 상수 메서드다.
+* 상수 메서드는 하드코딩된 값을 반환하는 메서드다.
+* 상수 메서드는 읽기 메서드에 각기 다른 값을 반환하는 하위클래스에 넣으면 유용하다.
+* 상위클래스 안에 읽기 메서드를 정의하고 그 읽기 메서드를 하위클래스에서 다양한 값으로 구현하자.
+* 상수 메서드가 유용하기 해도, 하위클래스를 상수 메서드로만 구성한다고 해서 그만큼 효용성이 커지는 것은 아니다.
+* 상위클래스 안에 필드를 넣고 그런 하위클래스는 완전히 삭제하면 된다.
+* 그렇게 하면 하위클래스의 불필요한 복잡함도 사라진다.
+
+
+
+#### 16.2 방법
+
+* 하위클래스에 생성자를 팩토리 메서드로 전환을 적용하자.
+* 하위클래스 참조 부분을 전부 상위클래스 참조로 수정하자.
+* 상위클래스에 각 상수 메서드에 대한 final 타입의 필드를 선언하자.
+* protected 타입의 상위클래스 생성자를 선언해서 필드를 초기화하자.
+* 하위클래스 생성자를 추가하거나 수정해서 새 상위클래스 생성자를 호출하자.
+* 상위클래스 안에 필드를 반환하는 각 상수 메서드를 구현하고 하위클래스의 메서드는 삭제하자.
+* 하위클래스 메서드를 전부 삭제했으면 메서드 내용 직접 삽입 기법을 실시해서 생성자 메서드 내용을 상위클래스의 팩토리 메서드에 직접 넣자.
+* 하위 클래스를 삭제하자.
+* 생성자 메서드 내용을 다시 팩토리 메서드에 직접 넣고, 작업이 완료되면 각 하위클래스를 삭제하자.
+
+
+
+#### 16.3 예제
+
+```java
+abstract class Person {
+	abstract boolean isMale();
+	abstract char getCode();
+}
+```
+
+```java
+public class Male extends Person{
+	boolean isMale() {
+		return true;
+	}
+	
+	@Override
+	char getCode() {
+		return 'M';
+	}
+}
+```
+
+```java
+public class Female extends Person{
+	boolean isMale() {
+		return false;
+	}
+	
+	@Override
+	char getCode() {
+		return 'F';
+	}
+}
+```
+
+* Male 하위클래스와 Female 하위클래스는 하드코딩된 상수 메서드 반환만 다르다.
+* 이렇게 기능이 충실하지 못한 하위클래스는 삭제하자.
+* 우선 생성자를 팩토리 메서드로 전환을 실시해야 한다.
+* 이 예제는 각 하위클래스마다 팩토리 메서드가 필요하다.
+
+```java
+abstract class Person {
+	abstract boolean isMale();
+	abstract char getCode();
+	
+	static Person createMale() {
+		return new Male();
+	}
+	
+	static Person createFemale() {
+		return new Female();
+	}
+}
+```
+
+* 다음과 같은 형태의 호출 코드를 찾아서 바꾸자.
+
+```java
+Person kent = new Male(); // 바꾸기 전
+Person Kent = Person.createFemale(); // 바꾼 후
+```
+
+* 호출 부분을 수정했으면 하위클래스 참조 코드를 전부 삭제해야 한다.
+* 텍스트 검색 기능으로 하위클래스 참조 부분을 찾은 후 하위클래스들을 private 타입으로 바꿔서 적어도 패키지 외부에서 이 하위클래스들을 참조하는 부분이 없는지 확인하면 된다.
+* 상위클래스에서 다음과 같이 각 상수 메서드별 필드를 선언하자.
+* 상위클래스에 protected 타입의 생성자 메서드를 추가한다.
+* 새로 작성한 생성자를 호출하는 생성자 메서드를 추가한다.
+* 상위클래스에 읽기 메서드를 넣어 필드를 사용하게 만들고 하위클래스 메서드는 삭제하자.
+
+```java
+class Person {
+	
+	private final boolean isMale;
+	private final char code;
+	
+	protected Person(boolean isMale, char code) {
+		this.isMale = isMale;
+		this.code = code;
+	}
+	
+	boolean isMale() {
+		return isMale;
+	}
+	
+	char getCode() {
+		return code;
+	}
+	
+	static Person createMale() {
+		return new Male();
+	}
+	
+	static Person createFemale() {
+		return new Female();
+	}
+}
+```
+
+```java
+public class Male extends Person{
+	Male() {
+		super(true, 'M');
+	}
+}
+
+public class Female extends Person{
+	Female() {
+		super(false, 'F');
+	}
+}
+```
+
+* 하위 클래스 내용을 모두 삭제했으면 메서드 내용 직접 삽입을 실시해서 하위클래스 생성자 내용을 상위 클래스 안에 넣는다.
+
+```java
+class Person {
+	
+	private final boolean isMale;
+	private final char code;
+	
+	protected Person(boolean isMale, char code) {
+		this.isMale = isMale;
+		this.code = code;
+	}
+	
+	boolean isMale() {
+		return isMale;
+	}
+	
+	char getCode() {
+		return code;
+	}
+	
+	static Person createMale() {
+		return new Person(true, 'M');
+	}
+	
+	static Person createFemale() {
+		return new Person(false, 'F');
+	}
+}
+```
+
+* Male, Female 클래스는 삭제한다.
