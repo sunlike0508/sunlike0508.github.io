@@ -1062,45 +1062,557 @@ public class Person {
 
 
 
+#### 12.1 동기
+
+* 분류부호를 하위클래스로 바꿀 때 발생한다.
+* 분류부호를 사용해 작성한 객체가 있는데 현 시점에서 하위클래스가 필요해졌다.
+* 어느 하위클래스를 사용할지는 분류 부호에 따라 달라진다.
+* 하지만 생성자는 요청된 객체의 인스턴스 반환만 할 수 있다.
+* 따라서 생성자를 팩토리 메서드로 바꿔야 한다.
+* 생성자가 너무 제한되는 다른 상황에서도 팩토리 메서드를 사용할 수 있다.
+* 팩토리 메서드는 값을 참조로 전환을 실시하기 위해 꼭 필요하다.
+* 팩토리 메서드는 매개변수의 숫자와 타입을 벗어나는 다른 생성 동작을 나타낼 때도 사용할 수 있다.
 
 
 
+#### 12.2 방법
+
+* 팩토리 메서드를 작성하자. 그 메서드의 내용을 기존의 생성자 호출로 수정하자.
+* 모든 생성자 호출을 팩토리 메서드 호출로 바꾸자.
+* 생성자를 private으로 선언하자.
 
 
 
+#### 12.3 예제
+
+```java
+public class Employee {
+	private int type;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	Employee(int type) {
+		this.type = type;
+	}
+}
+```
+
+* 각 분류 부호에 해당하는 Employee 클래스의 하위클래스를 작성하려 한다.
+* 이를 위해선 팩토리 메서드를 다음과 같이 작성해야 한다.
+
+```java
+public class Employee {
+	private int type;
+	static final int ENGINEER = 0;
+	static final int SALESMAN = 1;
+	static final int MANAGER = 2;
+	
+	Employee(int type) {
+		this.type = type;
+	}
+	
+	static Employee create(int type) {
+		return new Employee(type);
+	}
+}
+```
+
+* 다음으로, 생성자 호출 부분을 전부 새 메서드 호출로 고치고 생성자를 private 타입으로 바꾸자.
+
+```java
+Employee eng = Employee.create(Employee.ENGINEER);
+```
 
 
 
+##### 12.3.1 예제: 문자열을 사용하는 하위클래스 작성
+
+* 위에 개선된 점은 생성된 객체의 클래스에서 생성 호출의 결과를 받는 수신 메서드를 분리했다는 것이다.
+* 나중에 분류 부호를 하위클래스로 전환을 적용해서 분류 부호를 Employee의 하위클래스로 전환할 경우, 팩토리 메서드를 사용하면 이 하위클래스를 클라이언트가 볼 수 없게 은폐할 수 있다.
+
+```java
+static Employee create(int type) {
+    switch (type) {
+        case ENGINEER:
+            return new Engineer();
+        case SALESMAN:
+            return new Salesman();
+        case MANAGER:
+            return new Manager();
+        default:
+            throw new IllegalArgumentException("없는 분류 부호 값");
+    }
+}
+```
+
+* 한가지 단점은 switch 문이 생긴다는 것이다. 새 하위클래스를 추가해야 할 땐 이 switch 문을 반드시 수정해야 한다.
+* 잊는 것을 방지하려면 Class.forName을 사용하는 것이 좋다.
+* 우선 매개변수의 타입을 수정해야 한다.
+* 매개변수 타입 변경은 기본적으로 메서드명 변경을 변형한 것이다.
+* 먼저 인자로 문자열을 받는 새 메서드를 작성하자.
+
+```java
+static Employee create(String name) {
+    try {
+        return (Employee) Class.forName(name).newInstance();
+    } catch (Exception e) {
+        throw new IllegalArgumentException("객체 " + name + "를 인스턴스화할 없음");
+    }
+}
+```
+
+* 그런 다음 정수 타입을 매개변수로 받는 create 메서드의 코드를 앞의 새 메서드 호출로 바꾸자.
+
+```java
+static Employee create(int type) {
+    switch (type) {
+        case ENGINEER:
+            return create("Engineer");
+        case SALESMAN:
+            return create("Salesman");
+        case MANAGER:
+            return create("Manager");
+        default:
+            throw new IllegalArgumentException("없는 분류 부호 값");
+    }
+}
+```
+
+* 이제 create 메서드 호출 부분에서 다음과 같은 명령문을 찾아 고치자.
+
+```java
+Employee eng = Employee.create(Employee.ENGINEER);
+```
+
+```java
+Employee eng = Employee.create("Engineer");
+```
+
+* 여기까지 마치면 정수 타입의 인자를 받는 create 메서드를 없앨 수 있다.
+
+* 이 방법은 Employee 클래스의 새 하위클래스를 추가할 때 create 메서드를 업데이트할 필요가 없어서 좋다.
+* 그러나 이 방법은 컴파일할 때의 검사가 너무 부족하므로 오타로 인해 런타임 에러가 발생할 수도 있다.
+* 이것이 중요한 문제라면 나는 바로 다음에 설명할 메서드를 작성해 사용하는데, 이때 하위클래스를 하나 추가할 때마다 새 메서드도 추가해야 한다.
+* 유연성과 타입 안전성 사이의 절충점을 찾기 위한 선택의 문제다.
+* 다행히 선택을 잘못하더라도 메서드를 매개변수로 전환이나 매개변수를 메서드로 전환을 적용하면 잘못된 선택을 되돌릴 수 있다.
+* Class.forname을 사용하기가 망설여지는 두 번째 이유는 Class.forName으로 인해 하위클래스 이름이 클라이언트에 노출된다는 것이다.
+* 다른 문자열을 사용해서 팩토리 메서드로는 다른 기능을 수행할 수 있으므로 이건 그다지 단점이라고 할 순 없다.
+* 메서드 내용 직접 삽입을 적용해서 팩토리 메서드를 없애지 않는 이유가 바로 이 때문이다.
 
 
 
+##### 12.3.2 예제: 메서드를 사용하는 하위클래스 작성
+
+* 또 다른 방법은 직접 작성한 메서드를 사용해서 하위클래스를 은폐하는 것이다.
+* 이 방법은 변하지 않는 두세 개의 하위클래스만 있을 때 사용 가능하다.
+* 예컨대, abstract 타입의 Person 클래스가 있고 그 하위 클래스로 Male과 Female이 있다고 하자.
+* 그러면 우선 다음과 같이 각 하위클래스에 해당하는 팩토리 메서드를 정의해야 한다.
+
+```java
+public class Person {
+	static Person createMale() {
+		return new Male();
+	}
+	
+	static Person createFemale() {
+		return new Female();
+	}
+}
+```
+
+* 생성자 호출 명령은 다음과 같다. 수정하자.
+
+```java
+Person kent = new Male();
+```
+
+```java
+Person kent = Person.createMale()
+```
+
+* 이렇게 하면 상위클래스가 하위클래스 정보를 알고 있는 상태가 유지된다.
+* 이를 방지하려면 Product Trader 패턴같은 더 복잡한 기법을 사용해야 한다.
+* 그러나 보통 앞에 두 가지로 충분하다.
 
 
 
+### 13. 하향 타입 변환을 캡슐화
+
+* 메서드가 반환하는 객체를 호출 부분에서 하향 타입 반환해야 할 땐 하향 타입 변환 기능을 메서드 안으로 옮기자.
 
 
 
+#### 13.1 동기
+
+* 하향 타입 변환은 타입을 철저히 따지는 객체지향 언어에서 제일 귀찮은 일이다.
+* 왜냐하면 하향 타입 변환은 불필요하단 느낌이 드는데다, 컴파일러가 스스로 파악해야 마땅할 것 같은 정보를 개발자가 일일이 알려줘야 하기 때문이다. 
+* 하지만 타입을 알아내기 까다로울 때가 많기에 웬만해선 개발자가 직접 작성해야 한다.
+* 사람들이 이터리에터를 어떤 목적으로 사용하는지 살펴보고 그 목적에 맞는 메서드를 작성하자.
 
 
 
+#### 13.2 방법
+
+* 메서드 호출의 결과로 반환된 값을 하향 타입 변환해야 하는 각종 상황을 찾자.
+  * 이런 상황은 컬렉션이나 이터레이터를 반환하는 메서드에서 자주 볼 수 있다.
+* 하향 타입 변환 코드를 그 메서드 안으로 옮기자.
+  * 컬렉션을 반환하는 메서드에 컬렉션 캡슐화를 적용하자.
 
 
 
+#### 13.2 예제
+
+```java
+Object lastReading() {
+    return readings.lastElement();
+}
+```
+
+```java
+Reading lastReading() {
+	return (Reading) readings.lastElement();
+}
+```
 
 
 
+### 14. 에러 부호를 예외 통지로 교체
+
+* 메서드가 에러를 나타내는 특수한 부호를 반환할 땐 그 부호 반환 코드를 예외 통지 코드로 바꾸자.
 
 
 
+#### 14.1 동기
+
+* 뭔가가 잘못되었을 때 개발자는 그 오류에 대응하는 작업을 실시해야 한다.
+* 에러 찾기 루틴은 에러를 발견하면 자신을 호출한 부분에 그것을 알리며, 호출 부분이 그 에러를 상위 호출 코드로 보낼 수 있다.
 
 
 
+#### 14.2 방법
+
+* 확인된 예외와 미확인 예외 중 어느 것을 사용해야 할지 판단하자.
+  * 호출 전에 호출하는 부분이 조건을 검사해야 한다면 미확인 예외로 하자.
+  * 예외가 확인된 것이면 새 예외를 작성하거나 기존 예외를 사용하자.
+* 호출 부분을 전부 찾아서 그 예외를 사용하게 수정하자.
+  * 미확인 예외일 땐 호출 부분이 메서드 호출 전에 적절한 검사를 하게 하자.
+  * 확인된 예외일 땐 호출 부분이 try 절 안에서 메서드를 호출하게 하자.
+* 메서드 시그너처를 수정해서 새로운 용도를 반영하자.
+
+* 확인된 예외와 미확인 예외 중 어느 것을 사용할지 판단하자.
+* 그 예외를 사용하는 새 메서드를 작성하자.
+* 원본 메서드의 내용을 수정해서 새 메서드를 호출하게 하자.
+* 원본 메서드 호출을 전부 새 메서드 호출로 바꾸자.
+* 원본 메서드를 삭제하자.
 
 
 
+#### 14.3 예제
+
+```java
+public class Account {
+
+	private int balance;
+	
+	int withdraw(int amount) {
+		if(amount > balance) {
+			return -1;
+		} else {
+			balance -= amount;
+			return 0;
+		}
+	}
+}
+```
+
+* 이 코드가 예외를 사용하게 수정하려면 우선 확인된 예외와 미확인 예외 중 어느 것을 사용할지 정해야 한다.
+* 이 결정은 출금 전의 잔액이 검사하는 기능을 호출 코드가 담당하는지 출금 메서드가 담당하는지에 따라 달라진다.
+* 계좌 잔액 검사가 호출 부분에서 이뤄진다면 withdraw 메서드에 잔액보다 큰 금액을 전달하면서 호출하는 건 프로그래밍 에러다.
+* 프로그래밍 에러, 즉 버그는 미확인 예외를 사용해야 한다.
+* 잔액 검사가 withdraw 메서드에서 이뤄진다면 예외를 반드시 인터페이스 안에 선언해야 한다.
+* 이런 식으로 호출 부분에 예외를 예상하고 적절한 처리를 하게 통지하는 것이다.
 
 
 
+##### 14.3.1 미확인 예외
+
+* 호출 부분이 검사를 담당할 것이다.
+* 반환 코드를 사용하는 부분이 없어야 한다.
+* 그건 프로그래머 에러이기 때문이다.
+
+```java
+if(account.withdraw(amount) == -1) {
+    handleOverdrawn();
+} else {
+    doTheUsualThing();
+}
+```
+
+* 다음과 같이 수정한다.
+
+```java
+if(!account.canWithdraw(amount)) {
+    handleOverdrawn();
+} else {
+    account.withdraw(amount);
+    doTheUsualThing();
+}
+```
+
+* 이제 에러 코드를 삭제하고 해당 에러 상황에 대한 예외를 통지해야 한다.
+* 기능은 정의에 따른다는 점에서 예외적이므로 다음과 같이 조건 검사에 감시 절을 넣어야 한다.
+
+```java
+void withdraw(int amount) {
+    if(amount > balance) {
+        throw new IllegalArgumentException("액수가 너무 큽니다");
+    } 
+
+    balance -= amount;
+}
+```
+
+* 이것은 프로그래머 에러이므로 어설션을 넣어 한결 정확하게 표시해야 한다.
+
+```java
+void withdraw(int amount) {
+    Assert.isTrue("잔액이 충분합니다", amount <= balance);
+    balance -= amount;
+}
+
+class Assert {
+	static void isTrue(String comment, boolean test) {
+		if(!test) {
+			throw new RuntimeException("어설션 실패: " + comment);
+		}
+	}
+}
+```
 
 
+
+##### 14.3.2 확인된 예외
+
+* 확인된 예외를 사용할 땐 처리 방법이 약간 다르다.
+* 우선 다음과 같이 적당한 새 예외 객체를 작성한다.
+
+```java
+class BalanceException extends Exception {
+}
+```
+
+* 호출 부분을 다음과 같이 수정하자.
+
+```java
+try {
+    account.withdraw(amount);
+    doTheUsualThing();
+} catch(BalanceException e) {
+    handleOverdrawn();
+}
+```
+
+* 이제 withdraw 메서드를 수정해서 앞의 예외를 사용하게 하자.
+
+```java
+void withdraw(int amount) throws BalanceException{
+    if(amount > balance) {
+        throw new BalanceException();
+    } 
+
+    balance -= amount;
+}
+```
+
+* 이 과저에서 힘든 점은 메서드와 메서드 호출 부분을 단번에 전부 고쳐야 한다는 것이다.
+* 그러지 않으면 컴파일러 에러가 발생하기 때문이다.
+* 호출 부분이 많을 땐 컴파일과 테스트를 실시하지 않고 하기엔 수정이 너무 방대할 수 있다.
+* 이럴 땐 임시 중개 메서드를 사용하면 된다.
+
+```java
+//호출 부분
+if(account.withdraw(amount) == -1) {
+    handleOverdrawn();
+} else {
+    doTheUsualThing();
+}
+//메서드
+int withdraw(int amount) {
+    if(amount > balance) {
+        return -1;
+    } else {
+        balance -= amount;
+        return 0;
+    }
+}
+```
+
+* 우선 예외 통지를 사용하는 newWithdraw 메서드를 새로 작성하자.
+
+```java
+void newWithdraw(int amount) throws BalanceException {
+    if(amount > balance) {
+        throw new BalanceException();
+    }
+
+    balance -= amount;
+}
+```
+
+* 그리고 원본 메서드 호출을 새 메서드 호출로 고치자.
+
+```java
+try {
+    account.newWithdraw(amount);
+    doTheUsualThing();
+} catch (BalanceException e) {
+    handleOverdrawn();
+}
+```
+
+* 완료했으면 원본 메서드 삭제하고 메서드명을 원래로 바꾸자.
+
+
+
+### 15. 예외 처리를 테스트로 교체
+
+* 호출 부분에 사전 검사 코드를 넣으면 될 상황인데 예외 통지를 사용했을 땐 호출 부분이 사전 검사를 실시하게 수정하자.
+
+
+
+#### 15.1 동기
+
+* 예외를 너무 많이 적용하면 좋지 않다.
+* 예외처리는 예외적인 기능, 즉, 예기치 못한 에러에 사용해야 한다.
+* 예외 처리를 조건문 대용으로 사용해선 안 된다.
+* 호출 부분이 메서드를 호출하기 전에 당연히 조건을 검사할 것으로 예상한다면, 개발자는 테스트틀 작성해야 하고 호출 부분은 그 테스트를 사용해야 한다.
+
+
+
+#### 15.2 방법
+
+* 테스트를 앞에 넣고 catch 절의 코드를 if문의 적절한 절로 복사하자.
+* catch 절이 실행되는지 여부가 표시되게 catch 절에 어설션을 넣자.
+* catch절을 삭제하고, 다른 catch 절이 없으면 try 절도 삭제하자.
+
+
+
+#### 15.3 예제
+
+* 새로 생성하기엔 많은 비용이 들지만 재사용할 수 있는 각종 리소스를 관리하는 객체를 사용하겠다.
+* 데이터 베이스 접속이 좋은 예
+* 리소스 관리 객체에는 두 개의 리소스 풀이 있다.
+* 하나는 가용 리소스 풀이고 다른 하는 할당 리소스 풀이다.
+* 클라이언트가 리소스를 요청하면 리소스 관리 객체는 리소스는 넘겨주고 가용 풀에 있던 리소스를 할당 풀로 전달한다.
+* 클라이언트가 리소스를 해제하면 관리 객체는 거꾸로 할당 풀의 리소스를 가용풀로 전달한다.
+* 클라이언트가 리소스를 요청했는데 사용 가능한 리소스가 없으면 관리 객체는 새 리소스를 생성한다.
+
+```java
+public class ResourcePool {
+	
+	Stack<Resource> available;
+	Stack<Resource> allocated;
+	
+	Resource getResource() {
+		Resource result;
+		
+		try {
+			result = available.pop();
+			allocated.push(result);
+			return result;
+		} catch(EmptyStackException e) {
+			result = new Resource();
+			allocated.push(result);
+			return result;
+		}
+	}
+}
+```
+
+* 여기서 리소스 고갈은 예기치 못한 일이 아니므로 예외 처리를 사용하면 안 된다.
+* 예외를 없애려면 우선 적절한 사전 테스트를 넣고 거기에 가용 리소스가 없을 때의 처리 코드를 넣는다.
+
+```java
+Resource getResource() {
+    Resource result;
+
+    if(available.isEmpty()) {
+        result = new Resource();
+        allocated.push(result);
+        return result;
+    } else {
+        try {
+            result = available.pop();
+            allocated.push(result);
+            return result;
+        } catch(EmptyStackException e) {
+            result = new Resource();
+            allocated.push(result);
+            return result;
+        }
+    }
+}
+```
+
+* 앞의 코드에선 예외가 절대로 발생하지 않아야 한다.
+* 거걸 확실히 하고자 다음과 같이 어설션을 넣는다.
+
+```java
+public class ResourcePool {
+	
+	Stack<Resource> available;
+	Stack<Resource> allocated;
+	
+	Resource getResource() {
+		Resource result;
+		
+		if(available.isEmpty()) {
+			result = new Resource();
+			allocated.push(result);
+			return result;
+		} else {
+			try {
+				result = available.pop();
+				allocated.push(result);
+				return result;
+			} catch(EmptyStackException e) {
+				Assert.shouldNeverReachHere("pop 실행 시에 available이 비어 있음");
+				result = new Resource();
+				allocated.push(result);
+				return result;
+			}
+		}
+	}
+}
+
+class Assert {
+	static void shouldNeverReachHere(String message) {
+		throw new RuntimeException(message);
+	}
+}
+```
+
+* 컴파일 후 예외가 발생하지 않으면 try절 삭제한다.
+
+```java
+public class ResourcePool {
+	
+	Stack<Resource> available;
+	Stack<Resource> allocated;
+	
+	Resource getResource() {
+		Resource result;
+		
+		if(available.isEmpty()) {
+			result = new Resource();
+		} else {
+			result = available.pop();
+		}
+		
+		allocated.push(result);
+		return result;
+	}
+}
+```
 
