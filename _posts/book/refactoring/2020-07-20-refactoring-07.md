@@ -639,7 +639,7 @@ int wins = row.getWins();
 
 * 도메인 데이터는 GUI 컨트롤 안에서만 사용 가능한데, 도메인 메서드가 그 데이터에 접근해야 할 땐 그 데이터를 도메인 객체로 복사하고, 양측의 데이터를 동기화하는 관측 인터페이스 observer를 작성하자.
 
-![]({{site.url}}/assets/images/ref20.PNG)
+![]({{site.url}}/assets/images/ref20.jpg)
 
 #### 6.1 동기
 

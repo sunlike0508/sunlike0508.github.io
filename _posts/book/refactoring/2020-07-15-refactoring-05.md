@@ -921,7 +921,7 @@ public class Order {
 }
 ```
 
-![]({{site.url}}/assets/images/ref18.PNG)
+![]({{site.url}}/assets/images/ref18.jpg)
 
 
 

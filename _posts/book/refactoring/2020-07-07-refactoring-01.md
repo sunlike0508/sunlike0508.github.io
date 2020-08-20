@@ -574,11 +574,11 @@ public class Rental {
 
 * 메서드를 Movie 클래스로 옮기기 전 클래스 호출 관계
 
-![]({{site.url}}/assets/images/ref12.PNG)
+![]({{site.url}}/assets/images/ref12.jpg)
 
 * 메서드를 Movie 클래스로 옮긴 후 클래스 호출 관계
 
-![]({{site.url}}/assets/images/ref13.PNG)
+![]({{site.url}}/assets/images/ref13.jpg)
 
 
 
@@ -591,11 +591,11 @@ public class Rental {
 * RegularPrice, ChildrensPrice, NewReleasePrice 클래스의 상위 클래스로 Price 클래스를 만들면 언제든 대여료를 변경할 수 있다.
 * 하위 클래스를 작성해서 Movie 클래스를 상속 구조로 만듦
 
-![]({{site.url}}/assets/images/ref14.PNG)
+![]({{site.url}}/assets/images/ref14.jpg)
 
 * Movie 클래스에 상태 패턴 적용
 
-![]({{site.url}}/assets/images/ref15.PNG)
+![]({{site.url}}/assets/images/ref15.jpg)
 
 * 최종 코드
 
@@ -820,7 +820,7 @@ public class Customer {
 * 위처럼 적용하는 것을 상태 패턴이라고 한다.
 * 상태 패턴 적용후 클래스 호출 관계
 
-![]({{site.url}}/assets/images/ref17.PNG)
+![]({{site.url}}/assets/images/ref17.jpg)
 
 
 

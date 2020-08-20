@@ -79,7 +79,7 @@ last_modified_at: 2020-08-17
 
 #### 2.3 예제
 
-![]({{site.url}}/assets/images/ref21.PNG)
+![]({{site.url}}/assets/images/ref21.jpg)
 
 * createBill 메서드는 다음과 같다.
 
@@ -106,7 +106,7 @@ class Customer {
 
 * 그러면 아래와 같이 된다.
 
-![]({{site.url}}/assets/images/ref22.PNG)
+![]({{site.url}}/assets/images/ref22.jpg)
 
 
 
